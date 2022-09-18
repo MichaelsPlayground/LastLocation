@@ -1,0 +1,37 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        applicationId "com.linkesoft.lastlocation"
+        minSdk 22
+        targetSdk 25
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        viewBinding true
+    }
+    namespace 'com.linkesoft.lastlocation'
+}
+
+dependencies {
+    implementation 'com.google.android.material:material:1.6.1' // for color themes
+    implementation 'org.osmdroid:osmdroid-android:6.1.13' // Open Street Map Android framework
+    implementation 'com.github.MKergall:osmbonuspack:6.9.0' // OSM extensions, needs jitpack in settings.gradle
+
+}
