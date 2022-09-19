@@ -2,6 +2,7 @@
     <string name="app_name">Wo war ich?</string>
     <string name="powerDisconnected">Stromverbindung unterbrochen</string>
     <string name="getLocation">Bestimme aktuellen Standort</string>
+    <string name="locationSaved">Standort gespeichert</string>
     <string name="needBackgroundAccess">Die App benötigt Zugriff auf den Standort, auch wenn sie nicht läuft. Bitte geben Sie die Standort-Berechtigung "%s" in den Android App Einstellungen.</string>
     <string name="backgroundPermissionOptionLabel">Immer zugelassen</string>
     <string name="routeToHere">Route hierher</string>

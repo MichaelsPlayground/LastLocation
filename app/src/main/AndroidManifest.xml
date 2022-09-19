@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".PowerReceiver" android:exported="true">
+        <receiver android:name=".PowerBroadcastReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
             </intent-filter>

@@ -19,7 +19,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import java.util.Date;
 
 /**
- * A job service to get the current location. Requests location updates until accuracy reached.
+ * A job service to get the current location. Requests location updates until accuracy or max time reached.
  */
 public class LocationJobService extends JobService implements LocationListener {
     private final double desiredAccuracyMeters = 30;
@@ -34,7 +34,7 @@ public class LocationJobService extends JobService implements LocationListener {
         this.jobParameters = jobParameters;
         startTime = new Date().getTime();
         Toast.makeText(this,getString(R.string.getLocation), Toast.LENGTH_SHORT).show();
-        startGettingLocation(); // runs in background
+        startGettingLocation(); // location manager runs in background
         return true;
     }
 
@@ -59,12 +59,11 @@ public class LocationJobService extends JobService implements LocationListener {
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         String bestProvider = locationManager.getBestProvider(criteria, true);
         Log.e(getClass().getSimpleName(), "best location provider " + bestProvider);
-        // try last know location first
+        // try last know location first if it is fresh
         Location location = locationManager.getLastKnownLocation(bestProvider);
-        // do we have fresh current location
         if (location != null && location.getTime() > new Date().getTime() - 100) {
             Log.v(getClass().getSimpleName(), "current location " + location);
-            Prefs.setLastLocation(this, location);
+            Prefs.setLastPowerLocation(this, location);
             notifyMainActivity();
         }
         // start requesting async location updates, see onLocationChanged
@@ -75,16 +74,16 @@ public class LocationJobService extends JobService implements LocationListener {
     }
 
     private void notifyMainActivity() {
-        // notify main activity (if it is running) to update UI
+        // notify main activity (if it is running) via internal broadcast to update UI
         final Intent intent = new Intent();
-        intent.setAction(MainActivity.LOCATION_SERVICE);
+        intent.setAction(MainActivity.LOCATION_SAVED_NOTIFICATION);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        Log.v(getClass().getSimpleName(), "location " + location);
-        Prefs.setLastLocation(this, location);
+        Log.v(getClass().getSimpleName(), "location update " + location);
+        Prefs.setLastPowerLocation(this, location);
         notifyMainActivity();
         if (location.getAccuracy() < desiredAccuracyMeters) {
             Log.v(getClass().getSimpleName(), "location accuracy ok, finish");

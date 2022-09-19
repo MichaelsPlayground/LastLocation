@@ -59,12 +59,12 @@ public class MainActivity extends AppCompatActivity {
     public final static GeoPoint geoPointHeise = new GeoPoint(52.3858723,9.8078106); // heise Verlag Hannover
     private final double initialZoom = 12;
 
-    private static final String LOCATION_SAVED = "com.linkesoft.lastlocation.LOCATION_SAVED"; // app internal broadcast
+    protected static final String LOCATION_SAVED_NOTIFICATION = "com.linkesoft.lastlocation.LOCATION_SAVED_NOTIFICATION"; // app internal broadcast
     private final int PERMISSIONS_REQUEST = 1;
 
     private ActivityMainBinding binding;
     private MapView mapView;
-    private @Nullable Marker lastLocationMarker;
+    private @Nullable Marker lastPowerLocationMarker;
     private MyLocationNewOverlay currentLocationOverlay;
 
     @Override
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         }
         refreshOverlays();
         mapView.onResume(); // resume map updates
-        LocalBroadcastManager.getInstance(this).registerReceiver(locationSavedBroadcastReceiver, new IntentFilter(LOCATION_SAVED));
+        LocalBroadcastManager.getInstance(this).registerReceiver(locationSavedBroadcastReceiver, new IntentFilter(LOCATION_SAVED_NOTIFICATION));
         checkBackgroundLocationAccess();
     }
 
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
         showCurrentLocation();
 
-        showLastLocation();
+        showLastPowerLocation();
     }
 
     private void showCurrentLocation() {
@@ -175,31 +175,36 @@ public class MainActivity extends AppCompatActivity {
         // zoom on current location first time we know it
         currentLocationOverlay.runOnFirstFix(() -> {
             GeoPoint currentPoint = new GeoPoint(currentLocationOverlay.getLastFix());
-            Location lastLocation = Prefs.lastLocation(this);
-            if(lastLocation != null) {
+            Location lastPowerLocation = Prefs.lastPowerLocation(this);
+            if(lastPowerLocation != null) {
                 // zoom to include current and last location
-                GeoPoint lastPoint = new GeoPoint(lastLocation);
-                BoundingBox boundingBox = BoundingBox.fromGeoPoints(Arrays.asList(new GeoPoint[] {currentPoint,lastPoint})).increaseByScale(1.1f);
-                runOnUiThread(() -> mapView.zoomToBoundingBox(boundingBox,true));
+                GeoPoint lastPoint = new GeoPoint(lastPowerLocation);
+                if(lastPoint.distanceToAsDouble(currentPoint)>100) {
+                    BoundingBox boundingBox = BoundingBox.fromGeoPoints(Arrays.asList(currentPoint, lastPoint)).increaseByScale(1.1f);
+                    runOnUiThread(() -> mapView.zoomToBoundingBox(boundingBox, true));
+                } else {
+                    // very close, center map on current location
+                    runOnUiThread(() -> mapView.getController().setCenter(currentPoint));
+                }
             } else {
-                // center map on current location
+                // no last point, center map on current location
                 runOnUiThread(() -> mapView.getController().setCenter(currentPoint));
             }
         });
         mapView.getOverlays().add(currentLocationOverlay);
     }
 
-    private void showLastLocation() {
-        if(lastLocationMarker!=null)
-            mapView.getOverlays().remove(lastLocationMarker);
-        Location lastLocation = Prefs.lastLocation(this);
+    private void showLastPowerLocation() {
+        if(lastPowerLocationMarker !=null)
+            mapView.getOverlays().remove(lastPowerLocationMarker);
+        Location lastLocation = Prefs.lastPowerLocation(this);
         if(lastLocation != null) {
             GeoPoint point = new GeoPoint(lastLocation);
-            lastLocationMarker = showMarker(point);
-            lastLocationMarker.setIcon(getDrawable (R.drawable.power));
-            lastLocationMarker.setSubDescription("" + Prefs.formattedLastTimeStamp(this));
-            lookupAddress(point,lastLocationMarker);
-            lastLocationMarker.setOnMarkerClickListener((marker, mapView) -> {
+            lastPowerLocationMarker = showMarker(point);
+            lastPowerLocationMarker.setIcon(getDrawable (R.drawable.power));
+            lastPowerLocationMarker.setSubDescription("" + Prefs.formattedLastPowerTimeStamp(this));
+            lookupAddress(point, lastPowerLocationMarker);
+            lastPowerLocationMarker.setOnMarkerClickListener((marker, mapView) -> {
                 showLastLocationMenu(marker);
                 return false;
             });
@@ -232,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void lookupAddress(GeoPoint point, Marker marker) {
-        final GeocoderNominatim geocoder = new GeocoderNominatim(Configuration.getInstance().getNormalizedUserAgent());
+        final GeocoderNominatim geocoder = new GeocoderNominatim(Configuration.getInstance().getUserAgentValue());
         // don't make network calls on main
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -256,9 +261,9 @@ public class MainActivity extends AppCompatActivity {
         thread.start();
     }
     private void showPOIs(String poiName) {
-        final NominatimPOIProvider poiProvider = new NominatimPOIProvider(Configuration.getInstance().getNormalizedUserAgent());
+        final NominatimPOIProvider poiProvider = new NominatimPOIProvider(Configuration.getInstance().getUserAgentValue());
         final int maxResults = 100;
-        BoundingBox boundingBox =  mapView.getBoundingBox();
+        final BoundingBox boundingBox =  mapView.getBoundingBox();
         // don't make network calls on main
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -283,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showRoute(GeoPoint from, GeoPoint to) {
-        final OSRMRoadManager roadManager = new OSRMRoadManager(this, Configuration.getInstance().getNormalizedUserAgent());
+        final OSRMRoadManager roadManager = new OSRMRoadManager(this, Configuration.getInstance().getUserAgentValue());
         roadManager.setMean(OSRMRoadManager.MEAN_BY_FOOT);
         final ArrayList<GeoPoint> waypoints = new ArrayList<>( Arrays.asList(from,to) );
         // don't make network calls on main
@@ -309,10 +314,10 @@ public class MainActivity extends AppCompatActivity {
     private final BroadcastReceiver locationSavedBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(LOCATION_SAVED)) {
-                Toast.makeText(context,"Location saved",Toast.LENGTH_SHORT).show();
-                // update last location marker (if power disconnected while app is in foreground)
-                showLastLocation();
+            if(intent.getAction().equals(LOCATION_SAVED_NOTIFICATION)) {
+                // update last location marker on map (if power disconnected while app is in foreground)
+                Toast.makeText(context,R.string.locationSaved, Toast.LENGTH_SHORT).show();
+                showLastPowerLocation();
             }
         }
     };
@@ -345,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()) {
-
+            // not used
         }
         return super.onOptionsItemSelected(item);
     }

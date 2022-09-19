@@ -12,10 +12,18 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
-public class PowerReceiver extends BroadcastReceiver  {
+/**
+ * Broadcast receiver to get POWER_DISCONNECTED notifications. Registered in AndroidManifest.
+ * Works only with targetSdk 25 or lower.
+ */
+public class PowerBroadcastReceiver extends BroadcastReceiver  {
     private final int LOCATION_JOB_ID = 1;
     @Override
     public void onReceive(Context context, Intent intent) {
+        if(!intent.getAction().equals(Intent.ACTION_POWER_DISCONNECTED)) {
+            Log.e(getClass().getSimpleName(), "Invalid broadcast "+intent);
+            return;
+        }
         Log.v(getClass().getSimpleName(), "power disconnected broadcast "+isConnected(context));
         // onReceive always runs on main thread
         Toast.makeText(context,R.string.powerDisconnected,Toast.LENGTH_SHORT).show();

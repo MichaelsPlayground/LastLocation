@@ -10,17 +10,20 @@ import androidx.annotation.Nullable;
 import java.text.DateFormat;
 import java.util.Date;
 
+/**
+ * Wrapper for storing and retrieving shared preferenses
+ */
 public class Prefs {
     private final static String TIMESTAMP = "TIMESTAMP";
     private final static String LATITUDE = "LATITUDE";
     private final static String LONGITUDE = "LONGITUDE";
 
-    public static String formattedLastTimeStamp(Context context) {
+    public static String formattedLastPowerTimeStamp(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Date date = new Date(prefs.getLong(TIMESTAMP,0));
         return DateFormat.getDateTimeInstance().format(date);
     }
-    public static @Nullable Location lastLocation(Context context) {
+    public static @Nullable Location lastPowerLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         double latitude = prefs.getFloat(LATITUDE,0);
         double longitude = prefs.getFloat(LONGITUDE,0);
@@ -32,13 +35,13 @@ public class Prefs {
         location.setTime(prefs.getLong(TIMESTAMP,0));
         return location;
     }
-    public static void setLastLocation(Context context, @Nullable  Location location) {
+    public static void setLastPowerLocation(Context context, @Nullable  Location location) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         if(location==null)
-            prefs.edit().remove(LATITUDE).commit();
+            prefs.edit().remove(LATITUDE).apply();
         else
             prefs.edit().putFloat(LATITUDE,(float)location.getLatitude()).putFloat(LONGITUDE,(float)location.getLongitude())
                     .putLong(TIMESTAMP,new Date().getTime())
-                    .commit();
+                    .apply();
     }
 }
