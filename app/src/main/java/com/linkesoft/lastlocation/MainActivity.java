@@ -17,8 +17,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.linkesoft.lastlocation.databinding.ActivityMainBinding;
@@ -170,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
         // get current location with updates
         currentLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), mapView);
         currentLocationOverlay.setDrawAccuracyEnabled(true);
-        Bitmap meBitmap = ((BitmapDrawable)getDrawable (R.drawable.me)).getBitmap();
+        Bitmap meBitmap = ((BitmapDrawable) ContextCompat.getDrawable (this,R.drawable.me)).getBitmap();
         currentLocationOverlay.setPersonIcon(meBitmap);
         // zoom on current location first time we know it
         currentLocationOverlay.runOnFirstFix(() -> {
@@ -201,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
         if(lastLocation != null) {
             GeoPoint point = new GeoPoint(lastLocation);
             lastPowerLocationMarker = showMarker(point);
-            lastPowerLocationMarker.setIcon(getDrawable (R.drawable.power));
+            lastPowerLocationMarker.setIcon(ContextCompat.getDrawable (this,R.drawable.power));
             lastPowerLocationMarker.setSubDescription("" + Prefs.formattedLastPowerTimeStamp(this));
             lookupAddress(point, lastPowerLocationMarker);
             lastPowerLocationMarker.setOnMarkerClickListener((marker, mapView) -> {
@@ -219,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                     if(currentPoint != null)
                         showRoute(currentPoint, lastLocationMarker.getPosition());
                 }).
-                setNeutralButton(R.string.pois, (dialogInterface, i) -> showPOIs("fast_food")).create().show();
+                setNeutralButton(R.string.fastFootPOIs, (dialogInterface, i) -> showPOIs("fast_food")).create().show();
     }
 
     private void showMarkerWithText(GeoPoint point, String text) {
@@ -341,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -354,6 +354,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+     */
     private float dp2px(float dp) {
         return dp * getResources().getDisplayMetrics().density;
     }

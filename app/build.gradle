@@ -31,7 +31,7 @@ android {
 
 dependencies {
     implementation 'com.google.android.material:material:1.6.1' // for color themes
-    implementation 'org.osmdroid:osmdroid-android:6.1.13' // Open Street Map Android framework
+    implementation 'org.osmdroid:osmdroid-android:6.1.14' // Open Street Map Android framework
     implementation 'com.github.MKergall:osmbonuspack:6.9.0' // OSM extensions, needs jitpack in settings.gradle
 
 }
