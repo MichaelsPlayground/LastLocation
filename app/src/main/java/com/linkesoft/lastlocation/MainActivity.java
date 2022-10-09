@@ -55,7 +55,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    public final static GeoPoint geoPointHeise = new GeoPoint(52.3858723,9.8078106); // heise Verlag Hannover
+    public final static GeoPoint geoPointHeise = new GeoPoint(52.3859132, 9.8089183); // heise Verlag Hannover
     private final double initialZoom = 12;
 
     protected static final String LOCATION_SAVED_NOTIFICATION = "com.linkesoft.lastlocation.LOCATION_SAVED_NOTIFICATION"; // app internal broadcast
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         IMapController mapController = mapView.getController();
         mapController.setZoom(initialZoom);
         mapController.setCenter(new GeoPoint(geoPointHeise));
-
+        showSatImages();
     }
     @Override
     protected void onResume() {
@@ -117,14 +117,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     void showSatImages() {
-        String[] urlArray = {"http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"};
+        String[] urlArray = {"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"};
         mapView.setTileSource(new OnlineTileSourceBase("ARCGisOnline", 0, 18, 256, "", urlArray) {
             @Override
-            public String getTileURLString(long pMapTileIndex) {
-                String mImageFilenameEnding = ".png";
-                return getBaseUrl() + MapTileIndex.getZoom(pMapTileIndex) + "/"
-                        + MapTileIndex.getY(pMapTileIndex) + "/" + MapTileIndex.getX(pMapTileIndex)
-                        + mImageFilenameEnding;
+            public String getTileURLString(long tileIndex) {
+                return getBaseUrl() + MapTileIndex.getZoom(tileIndex) + "/"
+                        + MapTileIndex.getY(tileIndex) + "/" + MapTileIndex.getX(tileIndex)
+                        + ".png";
             }
         });
     }
@@ -253,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                         marker.setTitle(str.toString());
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(getClass().getSimpleName(),"Error reverse geocoding",e);
                 }
             }
         });
@@ -303,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this,road.getLengthDurationText(MainActivity.this,-1),Toast.LENGTH_LONG).show();
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(getClass().getSimpleName(),"Error routing",e);
             }
         });
 
