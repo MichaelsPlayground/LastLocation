@@ -4,10 +4,13 @@ plugins {
 
 android {
     compileSdk 32
-
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
     defaultConfig {
         applicationId "com.linkesoft.lastlocation"
         minSdk 22
+        //noinspection ExpiredTargetSdkVersion
         targetSdk 25
         versionCode 1
         versionName "1.0"
