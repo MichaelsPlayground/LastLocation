@@ -17,6 +17,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -339,7 +341,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    /*
+
+/*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -353,7 +356,8 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-     */
+*/
+
     private float dp2px(float dp) {
         return dp * getResources().getDisplayMetrics().density;
     }
